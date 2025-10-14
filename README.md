@@ -1,5 +1,8 @@
 # 🌡️ Temperaturas Argentina
 
+![previewww](https://github.com/user-attachments/assets/3ce59f7d-143a-4df1-ab88-2b432d7a1405)
+
+
 Una aplicación web moderna que muestra las temperaturas actuales de diferentes ciudades y provincias de Argentina en tiempo real.
 
 ## 🌟 Características
