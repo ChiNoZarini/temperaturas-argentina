@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperaturas Argentina</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #000000;
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .main-display {
+            text-align: center;
+            animation: fadeIn 1s ease-in;
+        }
+        
+        .temperature {
+            font-size: 15rem;
+            font-weight: 900;
+            margin-bottom: 40px;
+            text-shadow: 0 0 80px rgba(255, 255, 255, 0.3);
+            line-height: 0.8;
+            animation: slideIn 0.8s ease-out;
+        }
+        
+        .line-separator {
+            width: 800px;
+            height: 4px;
+            background-color: white;
+            margin: 40px auto;
+            animation: expandLine 0.6s ease-out 0.5s both;
+        }
+        
+        .location-name {
+            font-size: 4rem;
+            font-weight: 700;
+            letter-spacing: 15px;
+            text-transform: uppercase;
+            margin-top: 40px;
+            animation: slideInUp 0.8s ease-out 0.7s both;
+        }
+        
+        .loading {
+            font-size: 2rem;
+            opacity: 0.7;
+            animation: pulse 2s infinite;
+        }
+        
+        /* Subtle update indicator */
+        .update-indicator {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            font-size: 0.8rem;
+            opacity: 0.3;
+            transition: opacity 0.3s ease;
+        }
+        
+        .update-indicator.updating {
+            opacity: 0.8;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideInUp {
+            from { 
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes expandLine {
+            from { 
+                width: 0;
+                opacity: 0;
+            }
+            to { 
+                width: 800px;
+                opacity: 1;
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+        
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .temperature { font-size: 12rem; }
+            .line-separator { width: 600px; }
+            .location-name { font-size: 3rem; letter-spacing: 12px; }
+        }
+        
+        @media (max-width: 768px) {
+            .temperature { font-size: 8rem; }
+            .line-separator { width: 90vw; max-width: 400px; }
+            .location-name { 
+                font-size: 2rem; 
+                letter-spacing: 8px;
+                margin: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .temperature { font-size: 6rem; }
+            .location-name { 
+                font-size: 1.5rem; 
+                letter-spacing: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-display">
+        <div class="temperature" id="temperature">--°</div>
+        <div class="line-separator"></div>
+        <div class="location-name" id="locationName">CARGANDO...</div>
+    </div>
+    
+    <div class="update-indicator" id="updateIndicator">●</div>
+
+    <script>
+        const locations = [
+            { name: 'MENDOZA', lat: -32.8895, lon: -68.8458 },
+            { name: 'CHUBUT', lat: -43.2994, lon: -65.1018 },
+            { name: 'CORRIENTES', lat: -27.4692, lon: -58.8306 },
+            { name: 'ENTRE RÍOS', lat: -31.7333, lon: -60.5333 },
+            { name: 'JUJUY', lat: -24.1944, lon: -65.2972 },
+            { name: 'LA PAMPA', lat: -36.6167, lon: -64.2833 },
+            { name: 'LA RIOJA', lat: -29.4130, lon: -66.8506 },
+            { name: 'MISIONES', lat: -27.3676, lon: -55.8961 },
+            { name: 'NEUQUÉN', lat: -38.9516, lon: -68.0591 },
+            { name: 'RÍO NEGRO', lat: -40.8135, lon: -62.9967 },
+            { name: 'SALTA', lat: -24.7821, lon: -65.4232 },
+            { name: 'SAN JUAN', lat: -31.5375, lon: -68.5364 },
+            { name: 'SAN LUIS', lat: -33.2950, lon: -66.3356 },
+            { name: 'SANTA CRUZ', lat: -48.8000, lon: -69.2000 },
+            { name: 'SANTA FE', lat: -31.6333, lon: -60.7000 },
+            { name: 'SANTIAGO DEL ESTERO', lat: -27.7824, lon: -64.2678 },
+            { name: 'TIERRA DEL FUEGO', lat: -54.8019, lon: -68.3030 },
+            { name: 'TUCUMÁN', lat: -26.8083, lon: -65.2176 },
+            { name: 'BUENOS AIRES', lat: -34.6118, lon: -58.3960 },
+            { name: 'ISLAS MALVINAS', lat: -51.7963, lon: -59.5236 },
+            { name: 'BARILOCHE', lat: -41.1335, lon: -71.3103 },
+            { name: 'BAHÍA BLANCA', lat: -38.7183, lon: -62.2732 },
+            { name: 'PUERTO MADRYN', lat: -42.7692, lon: -65.0383 },
+            { name: 'MAR DEL PLATA', lat: -38.0055, lon: -57.5426 },
+            { name: 'LA PLATA', lat: -34.9205, lon: -57.9536 },
+            { name: 'ROSARIO', lat: -32.9442, lon: -60.6505 },
+            { name: 'CABA', lat: -34.6037, lon: -58.3816 },
+            { name: 'CÓRDOBA', lat: -31.4201, lon: -64.1888 },
+            { name: 'CATAMARCA', lat: -28.4696, lon: -65.7795 },
+            { name: 'CHACO', lat: -27.4511, lon: -58.9867 },
+            { name: 'FORMOSA', lat: -26.1775, lon: -58.1781 }
+        ];
+
+        let currentLocationIndex = 0;
+        let weatherData = {};
+        let isUpdating = false;
+
+        const temperatureEl = document.getElementById('temperature');
+        const locationNameEl = document.getElementById('locationName');
+        const updateIndicatorEl = document.getElementById('updateIndicator');
+
+        async function fetchWeatherData(location) {
+            try {
+                const response = await fetch(
+                    `https://api.open-meteo.com/v1/forecast?latitude=${location.lat}&longitude=${location.lon}&current=temperature_2m&timezone=America%2FArgentina%2FBuenos_Aires&forecast_days=1`
+                );
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const current = data.current;
+                
+                return {
+                    temperature: Math.round(current.temperature_2m)
+                };
+            } catch (error) {
+                console.error(`Error fetching weather for ${location.name}:`, error);
+                return {
+                    temperature: '--'
+                };
+            }
+        }
+
+        async function updateAllWeatherData() {
+            if (isUpdating) return;
+            
+            isUpdating = true;
+            updateIndicatorEl.classList.add('updating');
+            
+            console.log('Actualizando datos meteorológicos...');
+            
+            // Process in batches to be respectful to the free API
+            const batchSize = 5;
+            for (let i = 0; i < locations.length; i += batchSize) {
+                const batch = locations.slice(i, i + batchSize);
+                
+                const promises = batch.map(async location => {
+                    const weather = await fetchWeatherData(location);
+                    weatherData[location.name] = weather;
+                });
+                
+                await Promise.all(promises);
+                
+                // Small delay between batches
+                if (i + batchSize < locations.length) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+            
+            console.log('Actualización completada');
+            isUpdating = false;
+            updateIndicatorEl.classList.remove('updating');
+        }
+
+        function displayCurrentLocation() {
+            const location = locations[currentLocationIndex];
+            const weather = weatherData[location.name];
+            
+            // Trigger animations by removing and adding classes
+            temperatureEl.style.animation = 'none';
+            locationNameEl.style.animation = 'none';
+            
+            setTimeout(() => {
+                locationNameEl.textContent = location.name;
+                
+                if (weather && weather.temperature !== '--') {
+                    temperatureEl.textContent = `${weather.temperature}°`;
+                } else {
+                    temperatureEl.textContent = '--°';
+                }
+                
+                // Restart animations
+                temperatureEl.style.animation = 'slideIn 0.8s ease-out';
+                locationNameEl.style.animation = 'slideInUp 0.8s ease-out';
+            }, 50);
+        }
+
+        function nextLocation() {
+            currentLocationIndex = (currentLocationIndex + 1) % locations.length;
+            displayCurrentLocation();
+        }
+
+        // Initialize the application
+        async function init() {
+            locationNameEl.textContent = 'CARGANDO DATOS';
+            temperatureEl.textContent = '--°';
+            
+            // Load initial weather data
+            await updateAllWeatherData();
+            
+            // Display first location
+            displayCurrentLocation();
+            
+            // Set up intervals
+            setInterval(nextLocation, 3000); // Change location every 3 seconds
+            setInterval(updateAllWeatherData, 10 * 60 * 1000); // Update weather every 10 minutes
+        }
+
+        // Start the application
+        init();
+    </script>
+</body>
+</html>
