@@ -148,7 +148,7 @@
 </head>
 <body>
     <div class="main-display">
-        <div class="temperature" id="temperature">--°</div>
+        <div class="temperature" id="temperature">--°C</div>
         <div class="line-separator"></div>
         <div class="location-name" id="locationName">CARGANDO...</div>
     </div>
@@ -265,9 +265,9 @@
                 locationNameEl.textContent = location.name;
                 
                 if (weather && weather.temperature !== '--') {
-                    temperatureEl.textContent = `${weather.temperature}°`;
+                    temperatureEl.textContent = `${weather.temperature}°C`;
                 } else {
-                    temperatureEl.textContent = '--°';
+                    temperatureEl.textContent = '--°C';
                 }
                 
                 // Restart animations
@@ -284,7 +284,7 @@
         // Initialize the application
         async function init() {
             locationNameEl.textContent = 'CARGANDO DATOS';
-            temperatureEl.textContent = '--°';
+            temperatureEl.textContent = '--°C';
             
             // Load initial weather data
             await updateAllWeatherData();
