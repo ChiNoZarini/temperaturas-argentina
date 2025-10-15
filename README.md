@@ -7,7 +7,7 @@ Una aplicación web moderna que muestra las temperaturas actuales de diferentes 
 
 ## 🌟 Características
 
-- **Visualización elegante**: Interfaz minimalista con fondo negro y tipografía moderna
+- **Visualización elegante**: Interfaz minimalista con fondo transparente y tipografía moderna
 - **Datos en tiempo real**: Obtiene temperaturas actuales usando la API de Open-Meteo
 - **Rotación automática**: Cambia entre diferentes ubicaciones cada 3 segundos
 - **Actualización automática**: Refresca los datos meteorológicos cada 10 minutos
